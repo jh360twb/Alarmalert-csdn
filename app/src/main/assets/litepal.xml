@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <dbname value = "Clock">
+
+    </dbname>
+    <version value="5" />
+    <list>
+        <mapping class="com.example.dell.alarmalert_csdn.Clock" />
+    </list>
+</litepal>

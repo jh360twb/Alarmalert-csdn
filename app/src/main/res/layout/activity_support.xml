@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <include layout="@layout/title"/>
+    <TextView
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginTop="35dp"
+        android:text=" 作者开发不易\n
+    给一点赞助支持开发,多谢各位大佬(抱拳)"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <ImageView
+        android:background="@drawable/wechat"
+        android:layout_width="235dp"
+        android:layout_marginTop="35dp"
+        android:layout_gravity="center"
+        android:layout_height="300dp" />
+    <Button
+        android:id="@+id/towechat"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#fff"
+        android:text="请先截图然后点击跳转到微信"
+        android:background="@drawable/button_shape"
+        android:layout_marginTop="35dp"
+        android:layout_marginRight="45dp"
+        android:layout_marginEnd="45dp"
+        android:layout_marginLeft="45dp"
+        android:layout_marginStart="45dp"
+        android:layout_height="wrap_content" />
+</LinearLayout>

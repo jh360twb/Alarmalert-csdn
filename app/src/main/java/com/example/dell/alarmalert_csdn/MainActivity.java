@@ -5,310 +5,134 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Build;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import org.litepal.LitePal;
+import org.litepal.crud.DataSupport;
+
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    TextView show1;
-    TextView show2;
-    TextView show3;
-    Button setTime1;
-    Button setTime2;
-    Button setTime3;
-    Button delete1;
-    Button delete2;
-    Button delete3;
-    String show1String = null;
-    String show2String = null;
-    String show3String = null;
-    String defalutString = "目前无设置";
-    AlertDialog builder=null;
-    Calendar c=Calendar.getInstance();
-    private MediaPlayer mediaPlayer;
+    public static List<Clock> list = new ArrayList<>();
+    public static TimeAdapter timeAdapter;
+    RecyclerView recyclerView;
+    NavigationView navigationView;
+    DrawerLayout drawerLayout;
+    private ImageView more;
+    TextView title;
+    Context context = MainActivity.this;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mediaPlayer = MediaPlayer.create(this,R.raw.clockmusic2);
-        SharedPreferences settings = getPreferences(Activity.MODE_PRIVATE);
-        show1String = settings.getString("TIME1", defalutString);
-        show2String = settings.getString("TIME2", defalutString);
-        show3String = settings.getString("TIME3", defalutString);
-
-        InitSetTime1();
-        InitSetTime2();
-        InitSetTime3();
-        InitDelete1();
-        InitDelete2();
-        InitDelete3();
-
-        show1.setText(show1String);
-        show2.setText(show2String);
-        show3.setText(show3String);
-    }
-    private void InitSetTime1(){
-        show1 =(TextView)findViewById(R.id.show1);
-        setTime1 = (Button)findViewById(R.id.settime1);
-        setTime1.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                c.setTimeInMillis(System.currentTimeMillis());
-                int mHour=c.get(Calendar.HOUR_OF_DAY);
-                int mMinute=c.get(Calendar.MINUTE);
-                new TimePickerDialog(MainActivity.this,
-                        new TimePickerDialog.OnTimeSetListener()
-                        {
-                            public void onTimeSet(TimePicker view, int hourOfDay,
-                                                  int minute)
-                            {
-                                c.setTimeInMillis(System.currentTimeMillis());
-                                c.set(Calendar.HOUR_OF_DAY,hourOfDay);
-                                c.set(Calendar.MINUTE,minute);
-                                c.set(Calendar.SECOND,0);
-                                c.set(Calendar.MILLISECOND,0);
-
-                                Intent intent = new Intent(MainActivity.this, CallAlarm.class);
-                                PendingIntent sender=PendingIntent.getBroadcast(
-                                        MainActivity.this,0, intent, 0);
-                                AlarmManager am;
-                                am = (AlarmManager)getSystemService(ALARM_SERVICE);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                    am.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), sender);
-                                }
-
-                                String tmpS=format(hourOfDay)+"："+format(minute);
-                                show1.setText(tmpS);
-
-                                //SharedPreferences保存数据，并提交
-                                SharedPreferences time1Share = getPreferences(0);
-                                SharedPreferences.Editor editor = time1Share.edit();
-                                editor.putString("TIME1", tmpS);
-                                editor.commit();
-
-                                Toast.makeText(MainActivity.this,"设置闹钟时间为"+tmpS,
-                                        Toast.LENGTH_SHORT)
-                                        .show();
-                            }
-                        },mHour,mMinute,true).show();
-            }
-        });
-    }
-    private void InitDelete1(){
-        delete1 = (Button)findViewById(R.id.delete1);
-        delete1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, CallAlarm.class);
-                PendingIntent sender=PendingIntent.getBroadcast(
-                        MainActivity.this,0, intent, 0);
-                AlarmManager am;
-                am =(AlarmManager)getSystemService(ALARM_SERVICE);
-                am.cancel(sender);
-                Toast.makeText(MainActivity.this,"闹钟时间删除",
-                        Toast.LENGTH_SHORT).show();
-                show1.setText("目前无设置");
-
-                SharedPreferences time1Share = getPreferences(0);
-                SharedPreferences.Editor editor = time1Share.edit();
-                editor.putString("TIME1", "目前无设置");
-                editor.commit();
-            }
-        });
+        title = findViewById(R.id.title);
+        recyclerView = findViewById(R.id.clock_list);
+        navigationView = findViewById(R.id.nav);
+        more = findViewById(R.id.open_nav);
+        drawerLayout = findViewById(R.id.layout1);
+        initTitle();
+        LitePal.getDatabase();
+        initRecyclerView();
     }
 
-    private void InitSetTime2(){
-        show2 = (TextView)findViewById(R.id.show2);
-        setTime2 = (Button)findViewById(R.id.settime2);
-        setTime2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                c.setTimeInMillis(System.currentTimeMillis());
-                int mHour=c.get(Calendar.HOUR_OF_DAY);
-                int mMinute=c.get(Calendar.MINUTE);
-
-
-                new TimePickerDialog(MainActivity.this,
-                        new TimePickerDialog.OnTimeSetListener()
-                        {
-                            public void onTimeSet(TimePicker view, int hourOfDay,
-                                                  int minute)
-                            {
-                                c.setTimeInMillis(System.currentTimeMillis());
-                                c.set(Calendar.HOUR_OF_DAY,hourOfDay);
-                                c.set(Calendar.MINUTE,minute);
-                                c.set(Calendar.SECOND,0);
-                                c.set(Calendar.MILLISECOND,0);
-
-                                Intent intent = new Intent(MainActivity.this, CallAlarm.class);
-                                PendingIntent sender=PendingIntent.getBroadcast(
-                                        MainActivity.this,0, intent, 0);
-                                AlarmManager am;
-                                am = (AlarmManager)getSystemService(ALARM_SERVICE);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                    am.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), sender);
-                                }
-
-                                String tmpS=format(hourOfDay)+"："+format(minute);
-                                show2.setText(tmpS);
-
-                                //SharedPreferences保存数据，并提交
-                                SharedPreferences time1Share = getPreferences(0);
-                                SharedPreferences.Editor editor = time1Share.edit();
-                                editor.putString("TIME1", tmpS);
-                                editor.commit();
-
-                                Toast.makeText(MainActivity.this,"设置闹钟时间为"+tmpS,
-                                        Toast.LENGTH_SHORT)
-                                        .show();
-                            }
-                        },mHour,mMinute,true).show();
-            }
-        });
-    }
-    private void InitDelete2(){
-        delete2 = (Button)findViewById(R.id.delete2);
-        delete2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, CallAlarm.class);
-                PendingIntent sender=PendingIntent.getBroadcast(
-                        MainActivity.this,0, intent, 0);
-                AlarmManager am;
-                am =(AlarmManager)getSystemService(ALARM_SERVICE);
-                am.cancel(sender);
-                Toast.makeText(MainActivity.this,"闹钟时间删除",
-                        Toast.LENGTH_SHORT).show();
-                show2.setText("目前无设置");
-
-                SharedPreferences time1Share = getPreferences(0);
-                SharedPreferences.Editor editor = time1Share.edit();
-                editor.putString("TIME1", "目前无设置");
-                editor.commit();
-            }
-        });
-    }
-    private void InitSetTime3(){
-        show3 = (TextView)findViewById(R.id.show3);
-        setTime3 = (Button)findViewById(R.id.settime3);
-        setTime3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                c.setTimeInMillis(System.currentTimeMillis());
-                int mHour=c.get(Calendar.HOUR_OF_DAY);
-                int mMinute=c.get(Calendar.MINUTE);
-
-
-                new TimePickerDialog(MainActivity.this,
-                        new TimePickerDialog.OnTimeSetListener()
-                        {
-                            public void onTimeSet(TimePicker view, int hourOfDay,
-                                                  int minute)
-                            {
-                                c.setTimeInMillis(System.currentTimeMillis());
-                                c.set(Calendar.HOUR_OF_DAY,hourOfDay);
-                                c.set(Calendar.MINUTE,minute);
-                                c.set(Calendar.SECOND,0);
-                                c.set(Calendar.MILLISECOND,0);
-
-                                Intent intent = new Intent(MainActivity.this, CallAlarm.class);
-                                PendingIntent sender=PendingIntent.getBroadcast(
-                                        MainActivity.this,0, intent, 0);
-                                AlarmManager am;
-                                am = (AlarmManager)getSystemService(ALARM_SERVICE);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                                    am.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), sender);
-                                }
-
-                                String tmpS=format(hourOfDay)+"："+format(minute);
-                                show3.setText(tmpS);
-
-                                //SharedPreferences保存数据，并提交
-                                SharedPreferences time1Share = getPreferences(0);
-                                SharedPreferences.Editor editor = time1Share.edit();
-                                editor.putString("TIME1", tmpS);
-                                editor.commit();
-
-                                Toast.makeText(MainActivity.this,"设置闹钟时间为"+tmpS,
-                                        Toast.LENGTH_SHORT)
-                                        .show();
-                            }
-                        },mHour,mMinute,true).show();
-            }
-        });
-    }
-    private void InitDelete3(){
-        delete3 = (Button)findViewById(R.id.delete3);
-        delete3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, CallAlarm.class);
-                PendingIntent sender=PendingIntent.getBroadcast(
-                        MainActivity.this,0, intent, 0);
-                AlarmManager am;
-                am =(AlarmManager)getSystemService(ALARM_SERVICE);
-                am.cancel(sender);
-                Toast.makeText(MainActivity.this,"闹钟时间删除",
-                        Toast.LENGTH_SHORT).show();
-                show3.setText("目前无设置");
-
-                SharedPreferences time1Share = getPreferences(0);
-                SharedPreferences.Editor editor = time1Share.edit();
-                editor.putString("TIME1", "目前无设置");
-                editor.commit();
-            }
-        });
-    }
     @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        mediaPlayer.stop();
-        if(keyCode == KeyEvent.KEYCODE_BACK){
-            mediaPlayer.stop();
-            builder = new AlertDialog.Builder(MainActivity.this)
+    protected void onRestart() {
+        super.onRestart();
+        initRecyclerView();
+    }
 
-                    .setTitle("温馨提示：")
-                    .setMessage("您是否要退出程序？")
-                    .setPositiveButton("确定",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,
-                                                    int whichButton) {
-                                    mediaPlayer.stop();
-                                    MainActivity.this.finish();
-                                }
-                            })
-                    .setNegativeButton("取消",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog,
-                                                    int whichButton) {
-                                    mediaPlayer.stop();
-                                    builder.dismiss();
-                                }
-                            }).show();
+    private void initTitle() {
+        more.setImageResource(R.drawable.ic_more);
+        more.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(navigationView)) {
+                    drawerLayout.closeDrawer(navigationView);
+                } else {
+                    drawerLayout.openDrawer(navigationView);
+                }
+            }
+        });
+        title.setText("你的闹钟");
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.about:
+                        Intent intent = new Intent(context, AboutAuther.class);
+                        startActivity(intent);
+                        break;
+                    case R.id.explain:
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        builder.setTitle("使用说明");
+                        builder.setMessage("更新后的闹钟APP,供学习交流使用,暂时一次只能运行一个闹钟,下一个版本继续改");
+                        builder.setCancelable(true);
+                        builder.setPositiveButton("我知道了", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.show();
+                        break;
+                    case R.id.add:
+                        Intent intent1 = new Intent(MainActivity.this, AddClock.class);
+                        startActivity(intent1);
+                        break;
+                }
+                return true;
+            }
+        });
+
+    }
+
+    private void initRecyclerView() {
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        timeAdapter = new TimeAdapter(list, context);
+        recyclerView.setAdapter(timeAdapter);
+        list.clear();
+        List<Clock> list1 = DataSupport.findAll(Clock.class);
+        for (Clock clock : list1) {
+            list.add(clock);
         }
-        return true;
+        timeAdapter.notifyDataSetChanged();
     }
 
-    private String format(int x)
-    {
-        String s=""+x;
-        if(s.length()==1) s="0"+s;
-        return s;
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(navigationView)){
+            drawerLayout.closeDrawer(navigationView);
+        }
+        else {
+            MainActivity.this.finish();
+        }
     }
-
 }

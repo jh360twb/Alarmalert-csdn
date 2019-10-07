@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ClockDetail">
+
+    <include layout="@layout/title" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/hour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="25dp"
+            android:text="07"
+            android:textSize="39sp" />
+
+        <TextView
+            android:id="@+id/net"
+            android:layout_marginTop="5dp"
+            android:layout_toRightOf="@id/hour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" : "
+            android:textSize="29dp" />
+
+        <TextView
+            android:layout_toRightOf="@id/net"
+            android:id="@+id/minute"
+            android:layout_marginTop="7dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="59"
+            android:textSize="29sp" />
+        <Button
+            android:id="@+id/set_time"
+            android:text="设置时间"
+            android:background="@drawable/button_shape"
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="35dp"
+            android:layout_width="100dp"
+            android:layout_height="50dp" />
+
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_marginTop="38dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="标签"
+            android:textSize="20sp" />
+
+        <EditText
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+
+    </LinearLayout>
+    <Button
+        android:id="@+id/save"
+        android:text="保存"
+        android:textSize="20sp"
+        android:textColor="#fff"
+        android:textStyle="bold"
+        android:background="@drawable/button_shape"
+        android:layout_marginTop="35dp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/delete"
+        android:text="删除"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
+        android:textSize="20sp"
+        android:textColor="#fff"
+        android:textStyle="bold"
+        android:background="@drawable/button_shape"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>
