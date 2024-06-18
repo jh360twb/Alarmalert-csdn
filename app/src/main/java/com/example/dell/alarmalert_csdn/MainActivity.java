@@ -84,10 +84,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
                 switch (menuItem.getItemId()) {
-                    case R.id.about:
-                        Intent intent = new Intent(context, AboutAuther.class);
-                        startActivity(intent);
-                        break;
                     case R.id.explain:
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                         builder.setTitle("使用说明");
